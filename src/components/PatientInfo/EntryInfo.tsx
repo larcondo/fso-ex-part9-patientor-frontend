@@ -1,7 +1,19 @@
-import { Entry } from '../../types';
+import { Entry, Diagnosis } from '../../types';
+import { useDiagnosesContext } from '../../hooks/useDiagnosesContext';
 import { Typography } from '@mui/material';
 
-const EntryInfo = ({ entry }: { entry: Entry }) => {
+interface EntryInfoProps {
+  entry: Entry
+}
+
+const EntryInfo = ({ entry }: EntryInfoProps) => {
+  const { diagnoses } = useDiagnosesContext();
+
+  const findDescription = ( code: string ) => {
+    const desc: Diagnosis | undefined = diagnoses.find( d => d.code === code);
+    return (desc === undefined) ? null : desc?.name;
+  };
+
   return(
     <div>
       <Typography variant='body2'>
@@ -15,7 +27,7 @@ const EntryInfo = ({ entry }: { entry: Entry }) => {
               return (
                 <li key={index}>
                   <Typography variant='body2'>
-                    { e }
+                    { e } { findDescription(e) }
                   </Typography>
                 </li>
               );
