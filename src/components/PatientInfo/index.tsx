@@ -8,6 +8,8 @@ import EntryInfo from './EntryInfo';
 import { Typography } from '@mui/material';
 import { Female, Male } from '@mui/icons-material';
 
+import './index.css';
+
 const PatientInfo = () => {
   const { id } = useParams();
   const [patient, setPatient] = useState<Patient>();

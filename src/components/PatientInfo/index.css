@@ -1,0 +1,22 @@
+.entry {
+  border: 1px solid;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.hospital {
+  border-color: #1c1c1c;
+  /* border-color: #0000FF; */
+}
+
+.healthcheck {
+  /* border-color: #00FF00; */
+  border-color: #1c1c1c;
+}
+
+.occupational {
+  /* border-color: #FF0000; */
+  border-color: #1c1c1c;
+}
