@@ -2,6 +2,9 @@ import { Patient, Gender } from '../../types';
 import patientService from '../../services/patients';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+
+import EntryInfo from './EntryInfo';
+
 import { Typography } from '@mui/material';
 import { Female, Male } from '@mui/icons-material';
 
@@ -43,6 +46,16 @@ const PatientInfo = () => {
       </Typography>
       <Typography variant='body1'>ssn: {patient?.ssn}</Typography>
       <Typography variant='body1'>occupation: {patient?.occupation}</Typography>
+
+      <Typography variant='h6' margin={'16px 0'}>entries</Typography>
+      {
+        patient?.entries
+          ? patient.entries.length > 0
+            ? patient.entries.map( e => <EntryInfo entry={e} key={e.id} /> )
+            : <Typography variant='body2'>This patient has no entries.</Typography>
+          : <Typography variant='body2'>This patient has no entries.</Typography>
+      }
+
     </div>
   );
 };
