@@ -1,11 +1,13 @@
-import { Patient, Gender } from '../../types';
+import { Patient, Gender, NewEntry } from '../../types';
 import patientService from '../../services/patients';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import EntryInfo from './EntryInfo';
+import AddEntryForm from './AddEntryForm';
 
-import { Typography } from '@mui/material';
+import axios from 'axios';
+import { Typography, Alert } from '@mui/material';
 import { Female, Male } from '@mui/icons-material';
 
 import './index.css';
@@ -13,6 +15,7 @@ import './index.css';
 const PatientInfo = () => {
   const { id } = useParams();
   const [patient, setPatient] = useState<Patient>();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
 
@@ -39,6 +42,35 @@ const PatientInfo = () => {
     }
   };
 
+  const showError = (text: string) => {
+    setErrorMessage(text);
+    setTimeout(() => setErrorMessage(null), 3000);
+  };
+
+  const submitNewEntry = async (values: NewEntry) => {
+    try {
+      const updatedPatient = await patientService.postNewEntry(id as string, values);
+      setPatient(updatedPatient);
+      return true;
+    } catch(error: unknown) {
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data && typeof error.response.data === 'string') {
+          const PREFIX = 'Something went wrong. Error: ';
+          const msg = error.response.data.replace(PREFIX, '');
+          console.log(msg);
+          showError(msg);
+        } else {
+          showError('Unrecognized axios error');  
+        }
+      } else {
+        console.log('Unknown error', error);
+        showError('Unknown error');
+      }
+      return false;
+    }
+  };
+
   if (!id) return <div>loading...</div>;
 
   return(
@@ -48,6 +80,10 @@ const PatientInfo = () => {
       </Typography>
       <Typography variant='body1'>ssn: {patient?.ssn}</Typography>
       <Typography variant='body1'>occupation: {patient?.occupation}</Typography>
+
+      { errorMessage && <Alert severity='error'>{ errorMessage }</Alert> }
+
+      <AddEntryForm id={patient?.id} onSubmit={submitNewEntry} />
 
       <Typography variant='h6' margin={'16px 0'}>entries</Typography>
       {
