@@ -1,4 +1,4 @@
-import { Patient, Gender, NewEntry } from '../../types';
+import { Patient, Gender, EntryWithoutId } from '../../types';
 import patientService from '../../services/patients';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -47,7 +47,7 @@ const PatientInfo = () => {
     setTimeout(() => setErrorMessage(null), 3000);
   };
 
-  const submitNewEntry = async (values: NewEntry) => {
+  const submitNewEntry = async (values: EntryWithoutId) => {
     try {
       const updatedPatient = await patientService.postNewEntry(id as string, values);
       setPatient(updatedPatient);
@@ -83,7 +83,7 @@ const PatientInfo = () => {
 
       { errorMessage && <Alert severity='error'>{ errorMessage }</Alert> }
 
-      <AddEntryForm id={patient?.id} onSubmit={submitNewEntry} />
+      <AddEntryForm onSubmit={submitNewEntry} />
 
       <Typography variant='h6' margin={'16px 0'}>entries</Typography>
       {

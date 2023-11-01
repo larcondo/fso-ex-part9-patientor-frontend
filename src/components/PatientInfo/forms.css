@@ -1,0 +1,10 @@
+.entry-form {
+  border: 1px dashed gray;
+  padding: 20px;
+}
+
+@media screen and (width > 1000px) {
+  .entry-form {
+    width: 50%;
+  }
+}
