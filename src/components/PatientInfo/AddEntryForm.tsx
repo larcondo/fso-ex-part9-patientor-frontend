@@ -1,10 +1,13 @@
 import './forms.css';
 import { useState } from 'react';
 import { useDiagnosesContext } from '../../hooks/useDiagnosesContext';
-import { EntryWithoutId } from '../../types';
-import { parseDate, inRange, isValidCode } from '../../helpers';
+import { EntryWithoutId, HealthCheckRating } from '../../types';
+import { parseDate, inRange } from '../../helpers';
 
 import { Button, Grid, TextField, Box, Typography } from '@mui/material';
+
+import CustomSelect from './CustomSelect';
+import DiagnosisSelect from './DiagnosisSelect';
 
 interface Props {
   onSubmit: (values: EntryWithoutId ) => Promise<boolean>;
@@ -19,7 +22,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [specialist, setSpecialist] = useState<string>('');
-  const [codes, setCodes] = useState<string>('');
+  const [codes, setCodes] = useState<string[]>([]);
   // Specific Hospital inputs
   const [dischargeDate, setDischargeDate] = useState<string>('');
   const [dischargeCriteria, setDischargeCriteria] = useState<string>('');
@@ -34,7 +37,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
     setDescription('');
     setDate('');
     setSpecialist('');
-    setCodes('');
+    setCodes([]);
     if (type === 'Occupational') {
       setEmployer('');
       setStartDate('');
@@ -61,7 +64,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
         criteria: dischargeCriteria
       }
     };
-    if (codes !== '') entry.diagnosisCodes = codes.split(',');
+    if (codes.length > 0) entry.diagnosisCodes = codes;
     return entry;
   };
 
@@ -71,7 +74,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
       type: 'HealthCheck', ...base,
       healthCheckRating: Number(rating)
     };
-    if (codes !== '') entry.diagnosisCodes = codes.split(',');
+    if (codes.length > 0) entry.diagnosisCodes = codes;
     return entry;
   };
 
@@ -81,7 +84,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
       type: 'OccupationalHealthcare', ...base,
       employerName: employer
     };
-    if (codes !== '') entry.diagnosisCodes = codes.split(',');
+    if (codes.length > 0) entry.diagnosisCodes = codes;
     if (startDate !== '' || endDate !== '') {
       entry.sickLeave = { startDate, endDate };
     }
@@ -95,8 +98,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
 
     switch(type) {
       case 'Hospital':
-        const result = await onSubmit(getHospitalEntry());
-        if (result) clearFields();
+        if (await onSubmit(getHospitalEntry())) clearFields();
         break;
       case 'HealthCheck':
         if (await onSubmit(getHealthCheckEntry())) clearFields();
@@ -153,6 +155,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
           />
           <TextField
             fullWidth label='Date'
+            type='date' InputLabelProps={{ shrink: true }}
             variant='standard' margin='dense'
             value={date}
             onChange={(event) => setDate(event.target.value)}
@@ -165,12 +168,10 @@ const AddEntryForm = ({ onSubmit }: Props) => {
             onChange={(event) => setSpecialist(event.target.value)}
             error={specialist === ''}
           />
-          <TextField
-            fullWidth label='Diagnosis Codes'
-            variant='standard' margin='dense'
-            value={codes}
-            onChange={(event) => setCodes(event.target.value)}
-            error={!isValidCode(codes, diagnoses)}
+          <DiagnosisSelect
+            options={diagnoses} label='Diagnosis codes'
+            state={codes}
+            setFn={setCodes}
           />
 
           { type === 'Hospital' &&
@@ -178,13 +179,14 @@ const AddEntryForm = ({ onSubmit }: Props) => {
               <Typography color={'rgba(0, 0, 0, 0.6)'} mb={0}>Discharge</Typography>  
               <Box display={'flex'} gap={6} ml={2}>
                 <TextField margin='dense' label='Date'
+                  type='date' InputLabelProps={{ shrink: true }}
                   variant='standard'
                   value={dischargeDate}
                   onChange={(event) => setDischargeDate(event.target.value)}
                   error={!parseDate(dischargeDate)}
                 />
                 <TextField margin='dense' label='Criteria'
-                  variant='standard'
+                  variant='standard' InputLabelProps={{ shrink: true }}
                   value={dischargeCriteria}
                   onChange={(event) => setDischargeCriteria(event.target.value)}
                   error={dischargeCriteria === ''}
@@ -195,12 +197,17 @@ const AddEntryForm = ({ onSubmit }: Props) => {
 
           { type === 'HealthCheck' &&
             <>
-              <TextField
-                fullWidth label='HealthCheck Rating'
-                variant='standard' margin='dense'
-                value={rating}
-                onChange={({ target }) => setRating(target.value)}
-                error={!inRange(Number(rating), 0, 3)}
+              <CustomSelect
+                label='HealthCheck Rating'
+                state={rating}
+                setFn={setRating}
+                error={!inRange(Number(rating), 0, 3) || rating === ''}
+                options={[
+                  { label: 'Healthy', value: HealthCheckRating.Healthy },
+                  { label: 'Low Risk', value: HealthCheckRating.LowRisk },
+                  { label: 'High Risk', value: HealthCheckRating.HighRisk },
+                  { label: 'Critical Risk', value: HealthCheckRating.CriticalRisk },
+                ]}
               />
             </>
           }
@@ -217,6 +224,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
               <Box display={'flex'} gap={4} my={2}>
                 <TextField
                   fullWidth label='Start Date'
+                  type='date' InputLabelProps={{ shrink: true }}
                   variant='standard' margin='dense'
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
@@ -224,6 +232,7 @@ const AddEntryForm = ({ onSubmit }: Props) => {
                 />
                 <TextField
                   fullWidth label='End Date'
+                  type='date' InputLabelProps={{ shrink: true }}
                   variant='standard' margin='dense'
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
